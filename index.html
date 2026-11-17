@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explorador Encuesta UNER</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f6f5f2; --surface:#fcfcfb; --surface-2:#f0efec; --border:#e2e0da;
+  --text:#0b0b0b; --text-2:#52514e; --text-3:#7a7974;
+  --accent:#2a78d6; --accent-soft:#e3eefb;
+  --bar:#2a78d6; --heat:42,120,214;
+  --o1:#104281; --o2:#256abf; --o3:#5598e7; --o4:#86b6ef; --o5:#b7d3f6;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#1baf7a; --c4:#eda100; --c5:#e87ba4;
+  --warn-bg:#fff4dc; --warn-tx:#6b4b00;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121211; --surface:#1a1a19; --surface-2:#242422; --border:#34332f;
+    --text:#f0efec; --text-2:#c3c2b7; --text-3:#94938b;
+    --accent:#3987e5; --accent-soft:#1d2c40;
+    --bar:#3987e5; --heat:57,135,229;
+    --o1:#cde2fb; --o2:#86b6ef; --o3:#3987e5; --o4:#1c5cab; --o5:#184f95;
+    --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181;
+    --warn-bg:#3a2f12; --warn-tx:#f3d68b;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121211; --surface:#1a1a19; --surface-2:#242422; --border:#34332f;
+  --text:#f0efec; --text-2:#c3c2b7; --text-3:#94938b;
+  --accent:#3987e5; --accent-soft:#1d2c40;
+  --bar:#3987e5; --heat:57,135,229;
+  --o1:#cde2fb; --o2:#86b6ef; --o3:#3987e5; --o4:#1c5cab; --o5:#184f95;
+  --c1:#3987e5; --c2:#d95926; --c3:#199e70; --c4:#c98500; --c5:#d55181;
+  --warn-bg:#3a2f12; --warn-tx:#f3d68b;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,select,input{font:inherit;color:inherit}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header h1{font-size:17px;margin:0;font-weight:650}
+header .sub{color:var(--text-2);font-size:12.5px}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tabs button{border:1px solid transparent;background:none;padding:6px 12px;border-radius:8px;cursor:pointer;color:var(--text-2)}
+.tabs button.on{background:var(--accent-soft);color:var(--text);border-color:var(--border)}
+.icon-btn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 9px;cursor:pointer}
+
+.filtros{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filtros .lbl{color:var(--text-3);font-size:12px;margin-right:2px}
+.dd{position:relative}
+.dd>button{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:13px;white-space:nowrap}
+.dd>button.act{background:var(--accent-soft);border-color:var(--accent)}
+.dd .menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:30}
+.dd.open .menu{display:block}
+.menu label{display:flex;gap:8px;align-items:flex-start;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:13px}
+.menu label:hover{background:var(--surface-2)}
+.menu .acc{display:flex;gap:8px;border-top:1px solid var(--border);margin-top:6px;padding-top:6px}
+.menu .acc button{border:none;background:none;color:var(--accent);cursor:pointer;font-size:12.5px;padding:2px 4px}
+.toggle{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.toggle button{border:none;background:var(--surface);padding:5px 12px;cursor:pointer;font-size:13px;color:var(--text-2)}
+.toggle button.on{background:var(--accent);color:#fff}
+.base{margin-left:auto;color:var(--text-2);font-size:12.5px}
+.base b{color:var(--text)}
+.link{border:none;background:none;color:var(--accent);cursor:pointer;font-size:12.5px;padding:0}
+
+.layout{display:grid;grid-template-columns:290px 1fr;min-height:calc(100vh - 110px)}
+nav{border-right:1px solid var(--border);background:var(--surface);padding:12px 8px;overflow:auto;max-height:calc(100vh - 110px);position:sticky;top:110px}
+nav h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin:14px 10px 6px}
+nav button{display:flex;gap:8px;width:100%;text-align:left;border:none;background:none;padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--text-2);font-size:13px}
+nav button .nro{color:var(--text-3);min-width:22px;font-variant-numeric:tabular-nums}
+nav button:hover{background:var(--surface-2)}
+nav button.on{background:var(--accent-soft);color:var(--text)}
+#qsel{display:none}
+main{padding:20px 28px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.qhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.qhead h2{font-size:18px;margin:0 0 4px;font-weight:650;max-width:800px}
+.badge{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--text-2);margin-right:6px}
+.nota{color:var(--text-2);font-size:12.5px;margin:6px 0 0}
+.ctrls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 6px}
+.ctrls label{font-size:12.5px;color:var(--text-2);display:flex;gap:6px;align-items:center}
+select{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:5px 8px;max-width:100%}
+input[type=search]{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 10px;width:min(360px,100%)}
+
+/* barras */
+.bars{display:grid;grid-template-columns:minmax(120px,max-content) 1fr 64px;gap:6px 12px;align-items:center;margin-top:10px}
+.bars .lab{font-size:13px;color:var(--text);max-width:360px}
+.bars .track{height:22px;position:relative}
+.bars .bar{height:100%;background:var(--bar);border-radius:0 4px 4px 0;min-width:1px}
+.bars .bar.muted{background:var(--text-3);opacity:.55}
+.bars .val{font-variant-numeric:tabular-nums;font-size:13px;text-align:right;color:var(--text)}
+.bars .val small{display:block;color:var(--text-3);font-size:11px}
+.hit{cursor:default}
+.hit:hover .bar{filter:brightness(1.12)}
+
+/* apiladas */
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 0 4px;font-size:12.5px;color:var(--text-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.stack{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:8px 12px;align-items:center;margin-top:8px}
+.stack .row{display:flex;height:26px;gap:2px}
+.stack .seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-variant-numeric:tabular-nums;color:#fff;overflow:hidden;white-space:nowrap}
+.stack .seg:first-child{border-radius:4px 0 0 4px}
+.stack .seg:last-child{border-radius:0 4px 4px 0}
+.stack .seg.dk{color:#0b0b0b}
+
+/* histograma */
+.hist{display:flex;align-items:flex-end;gap:2px;height:200px;border-bottom:1px solid var(--border);margin-top:16px;padding-top:8px}
+.hist .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-width:6px}
+.hist .col div{background:var(--bar);border-radius:4px 4px 0 0}
+.hist .col:hover div{filter:brightness(1.12)}
+.hx{display:flex;gap:2px;font-size:10.5px;color:var(--text-3)}
+.hx span{flex:1;text-align:center;min-width:6px;overflow:hidden}
+.tiles{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.tile{background:var(--surface-2);border-radius:10px;padding:10px 14px;min-width:120px}
+.tile .k{font-size:12px;color:var(--text-2)}
+.tile .v{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums}
+
+/* tablas */
+.tw{overflow:auto;max-width:100%;margin-top:12px}
+table{border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--text-2);background:var(--surface);position:sticky;top:0}
+td:first-child,th:first-child{text-align:left;white-space:normal;min-width:180px;max-width:340px;position:sticky;left:0;background:var(--surface)}
+tr.base td{color:var(--text-3);font-size:11.5px}
+td.tot,th.tot{border-left:1px solid var(--border)}
+.small{font-size:12px;color:var(--text-3)}
+.warn{background:var(--warn-bg);color:var(--warn-tx);padding:8px 12px;border-radius:8px;font-size:12.5px;margin-top:10px}
+
+/* textos */
+.words{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.words button{border:1px solid var(--border);background:var(--surface-2);border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer}
+.words button b{color:var(--text-3);font-weight:500;margin-left:4px}
+.tlist{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:620px;overflow:auto}
+.titem{border:1px solid var(--border);border-radius:10px;padding:8px 12px;background:var(--surface)}
+.titem .meta{font-size:11.5px;color:var(--text-3);margin-top:3px}
+mark{background:#fbe39a;color:#0b0b0b;border-radius:2px}
+details{margin-top:12px}
+summary{cursor:pointer;color:var(--accent);font-size:13px}
+
+#tip{position:fixed;pointer-events:none;background:var(--text);color:var(--surface);font-size:12px;padding:6px 9px;border-radius:6px;z-index:50;display:none;max-width:280px;line-height:1.4}
+.ref{width:100%}
+.ref td,.ref th{text-align:left;white-space:normal}
+.ref td:first-child{min-width:140px}
+
+@media (max-width: 900px){
+  .layout{grid-template-columns:1fr}
+  nav{display:none}
+  #qsel{display:block;width:100%;margin-bottom:12px}
+  main{padding:14px 16px}
+  header,.filtros{padding:10px 16px}
+  .base{margin-left:0;width:100%}
+  .bars{grid-template-columns:minmax(90px,40%) 1fr 54px}
+  .stack{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Encuesta de comunicación estudiantil UNER 2026</h1>
+    <div class="sub">Explorador de resultados · df_analisis</div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button data-t="explorar" class="on">Explorar</button>
+    <button data-t="diccionario">Diccionario</button>
+    <button data-t="controles">Controles</button>
+  </div>
+  <button class="icon-btn" id="theme" title="Cambiar modo claro/oscuro" aria-label="Cambiar modo claro/oscuro">◐</button>
+</header>
+<div id="aviso" class="warn" style="margin:16px 20px">Cargando el explorador… Si este mensaje no desaparece, el visor donde abriste el archivo no ejecuta JavaScript: abrilo con doble clic desde el Explorador de archivos (o arrastralo a Chrome / Edge / Firefox).</div>
+<noscript><div class="warn" style="margin:16px 20px">Este explorador necesita JavaScript. Abrilo en Chrome, Edge o Firefox.</div></noscript>
+<div class="filtros" id="filtros"></div>
+
+<div id="v-explorar" class="layout">
+  <nav id="nav"></nav>
+  <main>
+    <select id="qsel" aria-label="Pregunta"></select>
+    <div id="vista"></div>
+  </main>
+</div>
+<div id="v-diccionario" hidden><main><div class="card" id="dic"></div></main></div>
+<div id="v-controles" hidden><main><div class="card" id="ctl"></div></main></div>
+<div id="tip"></div>
+
+<script>
+const DB = /*__DATOS__*/null;
+const D = DB.datos, N = DB.n, Q = DB.preguntas;
+const W = D.ponderador.v;
+const S = { q: Q[0].id, cruce: "", item: 0, pond: true, f: {} };
+try { const s = JSON.parse(localStorage.getItem("explorador_uner") || "{}"); Object.assign(S, s, { f: {} }); if (!Q.find(q => q.id === S.q)) S.q = Q[0].id; } catch (e) {}
+const guardar = () => { try { localStorage.setItem("explorador_uner", JSON.stringify({ q: S.q, cruce: S.cruce, pond: S.pond })); } catch (e) {} };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pct = (x, dec = 1) => x == null || isNaN(x) ? "–" : (x * 100).toFixed(dec).replace(".", ",") + "%";
+const fmt = (x, dec = 0) => x == null || isNaN(x) ? "–" : x.toLocaleString("es-AR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const etiquetaCorte = v => (DB.cortes.find(c => c.var === v) || {}).label || v;
+const w = i => S.pond ? W[i] : 1;
+
+/* ---------- tooltip ---------- */
+const tip = $("#tip");
+document.addEventListener("mousemove", e => {
+  const t = e.target.closest("[data-tip]");
+  if (!t) { tip.style.display = "none"; return; }
+  tip.innerHTML = t.dataset.tip; tip.style.display = "block";
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+});
+
+/* ---------- filtros ---------- */
+function filas() {
+  const out = [];
+  outer: for (let i = 0; i < N; i++) {
+    for (const v in S.f) { const set = S.f[v]; if (set && set.size && !set.has(D[v].v[i])) continue outer; }
+    out.push(i);
+  }
+  return out;
+}
+function dibujarFiltros() {
+  const el = $("#filtros");
+  const activos = Object.values(S.f).some(s => s && s.size);
+  el.innerHTML = `<span class="lbl">Filtrar:</span>` + DB.filtros.map(v => {
+    const sel = S.f[v] || new Set(), lv = D[v].lv;
+    const txt = sel.size ? `${etiquetaCorte(v)}: ${sel.size === 1 ? esc(lv[[...sel][0]]) : sel.size + " sel."}` : etiquetaCorte(v);
+    return `<div class="dd" data-v="${v}"><button class="${sel.size ? "act" : ""}" aria-haspopup="true">${txt} ▾</button>
+      <div class="menu">${lv.map((l, k) => `<label><input type="checkbox" data-k="${k}" ${sel.has(k) ? "checked" : ""}> <span>${esc(l)}${v === "p01_facultad_sigla" && DB.facultades[l] ? `<br><span class="small">${esc(DB.facultades[l])}</span>` : ""}</span></label>`).join("")}
+      <div class="acc"><button data-a="todo">Todos</button><button data-a="nada">Limpiar</button></div></div></div>`;
+  }).join("") + (activos ? `<button class="link" id="limpiar">Quitar filtros</button>` : "") +
+    `<span class="toggle" role="group" aria-label="Ponderación" style="margin-left:8px"><button data-p="1" class="${S.pond ? "on" : ""}">Ponderado</button><button data-p="0" class="${S.pond ? "" : "on"}">Sin ponderar</button></span>
+     <span class="base" id="base"></span>`;
+  el.querySelectorAll(".dd>button").forEach(b => b.onclick = e => {
+    e.stopPropagation(); const dd = b.parentElement, was = dd.classList.contains("open");
+    document.querySelectorAll(".dd.open").forEach(x => x.classList.remove("open")); if (!was) dd.classList.add("open");
+  });
+  el.querySelectorAll(".menu").forEach(m => m.onclick = e => e.stopPropagation());
+  el.querySelectorAll(".menu input").forEach(ch => ch.onchange = () => {
+    const v = ch.closest(".dd").dataset.v, k = +ch.dataset.k;
+    S.f[v] = S.f[v] || new Set(); ch.checked ? S.f[v].add(k) : S.f[v].delete(k);
+    refrescar(v);
+  });
+  el.querySelectorAll(".menu .acc button").forEach(b => b.onclick = () => {
+    const v = b.closest(".dd").dataset.v;
+    S.f[v] = b.dataset.a === "todo" ? new Set() : new Set(); refrescar(v);
+  });
+  const lim = $("#limpiar"); if (lim) lim.onclick = () => { S.f = {}; refrescar(); };
+  el.querySelectorAll(".toggle button").forEach(b => b.onclick = () => { S.pond = b.dataset.p === "1"; guardar(); refrescar(); });
+}
+function refrescar(abierto) {
+  dibujarFiltros();
+  if (abierto) { const dd = document.querySelector(`.dd[data-v="${abierto}"]`); if (dd) dd.classList.add("open"); }
+  render();
+}
+document.addEventListener("click", () => document.querySelectorAll(".dd.open").forEach(x => x.classList.remove("open")));
+
+/* ---------- navegación ---------- */
+function dibujarNav() {
+  let html = "", sec = "", opts = "";
+  for (const q of Q) {
+    if (q.sec !== sec) { html += `<h3>${esc(q.sec)}</h3>`; if (sec) opts += "</optgroup>"; opts += `<optgroup label="${esc(q.sec)}">`; sec = q.sec; }
+    html += `<button data-q="${q.id}" class="${q.id === S.q ? "on" : ""}"><span class="nro">${esc(q.nro)}</span><span>${esc(corto(q))}</span></button>`;
+    opts += `<option value="${q.id}" ${q.id === S.q ? "selected" : ""}>${esc(q.nro)}. ${esc(corto(q))}</option>`;
+  }
+  $("#nav").innerHTML = html; $("#qsel").innerHTML = opts + "</optgroup>";
+  $("#nav").querySelectorAll("button").forEach(b => b.onclick = () => irA(b.dataset.q));
+  $("#qsel").onchange = e => irA(e.target.value);
+}
+function corto(q) { return q.titulo.replace(/^¿|\?.*$/g, "").replace(/\s*\(hasta \d\)/, ""); }
+function irA(id) { S.q = id; S.item = 0; guardar(); dibujarNav(); render(); window.scrollTo({ top: 0 }); }
+
+/* ---------- cálculos ---------- */
+function freqCat(v, rows) {
+  const lv = D[v].lv, n = lv.map(() => 0), ws = lv.map(() => 0); let nv = 0, wv = 0;
+  for (const i of rows) { const c = D[v].v[i]; if (c == null) continue; n[c]++; ws[c] += w(i); nv++; wv += w(i); }
+  return { cats: lv.map((l, k) => ({ label: l, n: n[k], w: ws[k], p: wv ? ws[k] / wv : null })), nv, wv };
+}
+function freqMulti(q, rows) {
+  let nv = 0, wv = 0; const resp = [];
+  for (const i of rows) if (D[q.nvar].v[i] != null) { resp.push(i); nv++; wv += w(i); }
+  const cats = q.items.map(it => { let n = 0, ws = 0; for (const i of resp) if (D[it.var].v[i] === 1) { n++; ws += w(i); } return { label: it.label, n, w: ws, p: wv ? ws / wv : null, var: it.var }; });
+  return { cats, nv, wv };
+}
+function statsNum(v, rows) {
+  const xs = []; let sw = 0, sx = 0;
+  for (const i of rows) { const x = D[v].v[i]; if (x == null) continue; xs.push([x, w(i)]); sw += w(i); sx += x * w(i); }
+  xs.sort((a, b) => a[0] - b[0]);
+  const q = p => { let acc = 0; for (const [x, ww] of xs) { acc += ww; if (acc >= p * sw) return x; } return null; };
+  return { n: xs.length, wv: sw, media: sw ? sx / sw : null, mediana: q(.5), p25: q(.25), p75: q(.75), min: xs.length ? xs[0][0] : null, max: xs.length ? xs[xs.length - 1][0] : null, xs };
+}
+function gruposCorte(rows) {
+  if (!S.cruce) return null;
+  const v = S.cruce, lv = D[v].lv, g = lv.map(() => []);
+  for (const i of rows) { const c = D[v].v[i]; if (c != null) g[c].push(i); }
+  return lv.map((l, k) => ({ label: l, rows: g[k] })).filter(x => x.rows.length);
+}
+
+/* ---------- piezas de UI ---------- */
+function barras(cats, opts = {}) {
+  const max = Math.max(...cats.map(c => c.p || 0), 0.0001);
+  return `<div class="bars">${cats.map(c => `
+    <div class="lab">${esc(c.label)}</div>
+    <div class="track hit" data-tip="<b>${esc(c.label)}</b><br>${pct(c.p)} · n = ${fmt(c.n)}${S.pond ? `<br>Expandido: ${fmt(c.w)}` : ""}">
+      <div class="bar ${c.muted ? "muted" : ""}" style="width:${(c.p || 0) / max * 100}%"></div></div>
+    <div class="val">${pct(c.p)}<small>n ${fmt(c.n)}</small></div>`).join("")}</div>`;
+}
+function colores(q) {
+  return q.ordinal ? ["var(--o1)", "var(--o2)", "var(--o3)", "var(--o4)", "var(--o5)"] : ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)"];
+}
+function textoOscuro(q, k) {
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light" || document.documentElement.dataset.theme === "dark";
+  if (q.ordinal) return dark ? k <= 1 : k >= 2;
+  return !dark && (k === 3 || k === 4 || k === 2);
+}
+function apiladas(q, rows) {
+  const col = colores(q);
+  const leg = `<div class="legend">${q.escala.map((e, k) => `<span><i style="background:${col[k]}"></i>${esc(e)}</span>`).join("")}</div>`;
+  const filas_ = q.items.map(it => {
+    const f = freqCat(it.var, rows);
+    const segs = f.cats.map((c, k) => c.p ? `<div class="seg ${textoOscuro(q, k) ? "dk" : ""}" style="width:${c.p * 100}%;background:${col[k]}" data-tip="<b>${esc(it.label)}</b><br>${esc(c.label)}: ${pct(c.p)}<br>n = ${fmt(c.n)}">${c.p >= .07 ? pct(c.p, 0) : ""}</div>` : "").join("");
+    return `<div class="lab">${esc(it.label)} <span class="small">n ${fmt(f.nv)}</span></div><div class="row">${segs}</div>`;
+  }).join("");
+  return leg + `<div class="stack">${filas_}</div>`;
+}
+function heat(p, max) { const a = max ? Math.min(.55, (p || 0) / max * .55) : 0; return `background:rgba(var(--heat),${a.toFixed(3)})`; }
+
+function tablaCruce(filasDef, grupos, total, opts = {}) {
+  // filasDef: [{label, fn(rows)->{p,n}}], grupos: [{label, rows}], total rows
+  const cols = grupos.concat([{ label: "Total", rows: total, tot: true }]);
+  const cells = filasDef.map(f => cols.map(c => f.fn(c.rows)));
+  const max = Math.max(...cells.flat().map(c => c.p || 0), .0001);
+  const isNum = opts.num;
+  let h = `<div class="tw"><table><thead><tr><th>${esc(opts.rowHead || "")}</th>${cols.map(c => `<th class="${c.tot ? "tot" : ""}">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>`;
+  filasDef.forEach((f, r) => {
+    h += `<tr><td>${esc(f.label)}</td>${cells[r].map((c, k) => `<td class="${cols[k].tot ? "tot" : ""}" style="${isNum ? "" : heat(c.p, max)}" data-tip="<b>${esc(f.label)}</b><br>${esc(cols[k].label)}: ${isNum ? fmt(c.p, 1) : pct(c.p)}<br>n = ${fmt(c.n)}">${isNum ? fmt(c.p, 1) : pct(c.p)}</td>`).join("")}</tr>`;
+  });
+  if (opts.base) h += `<tr class="base"><td>Base (n casos válidos)</td>${cols.map(c => `<td class="${c.tot ? "tot" : ""}">${fmt(opts.base(c.rows))}</td>`).join("")}</tr>`;
+  h += `</tbody></table></div>`;
+  ultimaTabla = { head: [opts.rowHead || ""].concat(cols.map(c => c.label)), rows: filasDef.map((f, r) => [f.label].concat(cells[r].map(c => isNum ? (c.p == null ? "" : c.p.toFixed(2)) : (c.p == null ? "" : (c.p * 100).toFixed(1))))).concat(opts.base ? [["Base n"].concat(cols.map(c => opts.base(c.rows)))] : []) };
+  return h;
+}
+let ultimaTabla = null;
+function csv() {
+  if (!ultimaTabla) return;
+  const q = Q.find(x => x.id === S.q);
+  const linea = r => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(";");
+  const txt = "﻿" + [ultimaTabla.head, ...ultimaTabla.rows].map(linea).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([txt], { type: "text/csv;charset=utf-8" }));
+  a.download = `${q.id}${S.cruce ? "_x_" + S.cruce : ""}${S.pond ? "_pond" : ""}.csv`; a.click();
+}
+function selCruce() {
+  return `<label>Abrir por <select id="cruce"><option value="">— Sin apertura —</option>${DB.cortes.map(c => `<option value="${c.var}" ${S.cruce === c.var ? "selected" : ""}>${esc(c.label)}</option>`).join("")}</select></label>`;
+}
+function totalTabla(cats, head) {
+  ultimaTabla = { head: [head, "%", "n", S.pond ? "Expandido" : ""].filter(Boolean), rows: cats.map(c => [c.label, c.p == null ? "" : (c.p * 100).toFixed(1), c.n].concat(S.pond ? [Math.round(c.w)] : [])) };
+}
+
+/* ---------- vistas ---------- */
+function render() {
+  const rows = filas();
+  let wt = 0; for (const i of rows) wt += W[i];
+  $("#base").innerHTML = `<b>${fmt(rows.length)}</b> casos de ${fmt(N)} · población expandida <b>${fmt(wt)}</b>`;
+  const q = Q.find(x => x.id === S.q);
+  const grupos = gruposCorte(rows);
+  ultimaTabla = null;
+  const tipoTxt = { unica: "Respuesta única", multiple: "Respuesta múltiple", grilla: "Grilla (una por fila)", numerica: "Numérica", texto: "Abierta" }[q.tipo];
+  let h = `<div class="card"><div class="qhead"><div><span class="badge">P${esc(q.nro)}</span><span class="badge">${tipoTxt}</span><span class="badge">${S.pond ? "Ponderado" : "Sin ponderar"}</span><h2>${esc(q.titulo)}</h2></div></div>`;
+  if (q.tipo !== "texto") h += `<div class="ctrls">${selCruce()}${q.tipo === "grilla" && S.cruce ? `<label>Ítem <select id="item">${q.items.map((it, k) => `<option value="${k}" ${S.item === k ? "selected" : ""}>${esc(it.label)}</option>`).join("")}</select></label>` : ""}<button class="link" id="csv">Descargar tabla (CSV)</button></div>`;
+
+  if (q.tipo === "unica") h += vistaUnica(q, rows, grupos);
+  else if (q.tipo === "multiple") h += vistaMultiple(q, rows, grupos);
+  else if (q.tipo === "grilla") h += vistaGrilla(q, rows, grupos);
+  else if (q.tipo === "numerica") h += vistaNumerica(q, rows, grupos);
+  else h += vistaTexto(q, rows);
+  h += `</div>`;
+  $("#vista").innerHTML = h;
+  const c = $("#cruce"); if (c) c.onchange = e => { S.cruce = e.target.value; guardar(); render(); };
+  const it = $("#item"); if (it) it.onchange = e => { S.item = +e.target.value; render(); };
+  const b = $("#csv"); if (b) b.onclick = csv;
+  if (q.tipo === "texto" || q.tipo === "multiple") enlazarTextos();
+}
+
+function notaBase(nv, total) {
+  return `<p class="nota">Base: ${fmt(nv)} casos con respuesta${total - nv > 0 ? ` (${fmt(total - nv)} sin respuesta excluidos)` : ""}.</p>`;
+}
+function vistaUnica(q, rows, grupos) {
+  const f = freqCat(q.var, rows);
+  let h = notaBase(f.nv, rows.length);
+  if (q.var === "p18_frec_ia") h += `<p class="nota">Solo corresponde a quienes usan IA (P17 = Sí).</p>`;
+  if (!grupos) { h += barras(f.cats); totalTabla(f.cats, "Categoría"); h += tablaSimple(f.cats); return h; }
+  h += tablaCruce(f.cats.map((c, k) => ({ label: c.label, fn: rs => { const g = freqCat(q.var, rs); return { p: g.cats[k].p, n: g.cats[k].n }; } })), grupos, rows,
+    { rowHead: etiquetaCorte(S.cruce) + " →", base: rs => freqCat(q.var, rs).nv });
+  h += `<p class="nota">Porcentajes por columna: cada columna suma 100%.</p>`;
+  return h;
+}
+function tablaSimple(cats) {
+  return `<details><summary>Ver tabla</summary><div class="tw"><table><thead><tr><th>Categoría</th><th>%</th><th>n</th>${S.pond ? "<th>Expandido</th>" : ""}</tr></thead><tbody>${cats.map(c => `<tr><td>${esc(c.label)}</td><td>${pct(c.p)}</td><td>${fmt(c.n)}</td>${S.pond ? `<td>${fmt(c.w)}</td>` : ""}</tr>`).join("")}</tbody></table></div></details>`;
+}
+function vistaMultiple(q, rows, grupos) {
+  const f = freqMulti(q, rows);
+  let h = notaBase(f.nv, rows.length) + `<p class="nota">% de quienes respondieron que marcó cada opción. Suman más de 100% porque se puede marcar más de una${q.maximo ? ` (máximo pedido: ${q.maximo})` : ""}.</p>`;
+  if (q.id >= "p18" ) h += `<p class="nota">Solo corresponde a quienes usan IA (P17 = Sí).</p>`;
+  const cats = f.cats.slice().sort((a, b) => (a.var.endsWith("_otro") - b.var.endsWith("_otro")) || (b.p - a.p));
+  cats.forEach(c => c.muted = c.var.endsWith("_otro") || /\(escrito en Otro\)/.test(c.label));
+  if (!grupos) {
+    h += barras(cats); totalTabla(cats, "Opción");
+    // cantidad marcada
+    const nm = statsNum(q.nvar, rows);
+    if (q.maximo) {
+      let ex = 0, exw = 0; for (const [x, ww] of nm.xs) if (x > q.maximo) { ex++; exw += ww; }
+      h += `<div class="tiles"><div class="tile"><div class="k">Opciones marcadas (promedio)</div><div class="v">${fmt(nm.media, 1)}</div></div><div class="tile"><div class="k">Marcaron más de ${q.maximo}</div><div class="v">${pct(nm.wv ? exw / nm.wv : null)}</div><div class="small">${fmt(ex)} casos (se conservan)</div></div></div>`;
+    } else h += `<div class="tiles"><div class="tile"><div class="k">Opciones marcadas (promedio)</div><div class="v">${fmt(nm.media, 1)}</div></div></div>`;
+  } else {
+    h += tablaCruce(cats.map(c => ({ label: c.label, fn: rs => { const g = freqMulti(q, rs); const x = g.cats.find(z => z.var === c.var); return { p: x.p, n: x.n }; } })), grupos, rows,
+      { rowHead: etiquetaCorte(S.cruce) + " →", base: rs => freqMulti(q, rs).nv });
+  }
+  h += listaTextos(q.otro, rows, `Ver respuestas escritas en "Otro"`);
+  h += listaTextos(q.nota, rows, `Ver notas de carga (encuestas en papel)`);
+  return h;
+}
+function vistaGrilla(q, rows, grupos) {
+  let h = "";
+  if (!grupos) {
+    h += `<p class="nota">Distribución de respuestas por fila (cada barra suma 100% de quienes respondieron esa fila).</p>` + apiladas(q, rows);
+    ultimaTabla = { head: ["Ítem"].concat(q.escala).concat(["n"]), rows: q.items.map(it => { const f = freqCat(it.var, rows); return [it.label].concat(f.cats.map(c => c.p == null ? "" : (c.p * 100).toFixed(1))).concat([f.nv]); }) };
+    h += `<details><summary>Ver tabla</summary><div class="tw"><table><thead><tr><th>Ítem</th>${q.escala.map(e => `<th>${esc(e)}</th>`).join("")}<th>n</th></tr></thead><tbody>${q.items.map(it => { const f = freqCat(it.var, rows); return `<tr><td>${esc(it.label)}</td>${f.cats.map(c => `<td>${pct(c.p)}</td>`).join("")}<td>${fmt(f.nv)}</td></tr>`; }).join("")}</tbody></table></div></details>`;
+    return h;
+  }
+  const it = q.items[S.item] || q.items[0];
+  h += `<p class="nota">Ítem: <b>${esc(it.label)}</b>. Porcentajes por columna.</p>`;
+  h += tablaCruce(q.escala.map((e, k) => ({ label: e, fn: rs => { const g = freqCat(it.var, rs); return { p: g.cats[k].p, n: g.cats[k].n }; } })), grupos, rows,
+    { rowHead: etiquetaCorte(S.cruce) + " →", base: rs => freqCat(it.var, rs).nv });
+  return h;
+}
+function vistaNumerica(q, rows, grupos) {
+  const s = statsNum(q.var, rows);
+  let h = notaBase(s.n, rows.length);
+  h += `<div class="tiles">${[["Media", fmt(s.media, 1)], ["Mediana", fmt(s.mediana)], ["P25 – P75", `${fmt(s.p25)} – ${fmt(s.p75)}`], ["Mín – Máx", `${fmt(s.min)} – ${fmt(s.max)}`]].map(([k, v]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("")}</div>`;
+  if (!grupos) {
+    const tope = q.var === "p05_edad" ? 40 : 12, lo = q.var === "p05_edad" ? 17 : 1;
+    const bins = []; for (let x = lo; x <= tope; x++) bins.push({ x, lab: x === tope ? tope + "+" : String(x), w: 0, n: 0 });
+    for (const [x, ww] of s.xs) { const b = bins[Math.min(Math.max(Math.round(x), lo), tope) - lo]; b.w += ww; b.n++; }
+    const mx = Math.max(...bins.map(b => b.w), 1);
+    h += `<div class="hist">${bins.map(b => `<div class="col" data-tip="<b>${b.lab}</b><br>${pct(s.wv ? b.w / s.wv : 0)} · n = ${fmt(b.n)}"><div style="height:${b.w / mx * 100}%"></div></div>`).join("")}</div><div class="hx">${bins.map(b => `<span>${b.lab}</span>`).join("")}</div>`;
+    ultimaTabla = { head: ["Valor", "%", "n"], rows: bins.map(b => [b.lab, s.wv ? (b.w / s.wv * 100).toFixed(1) : "", b.n]) };
+    return h;
+  }
+  h += tablaCruce([["Media", "media"], ["Mediana", "mediana"], ["P25", "p25"], ["P75", "p75"]].map(([l, k]) => ({ label: l, fn: rs => { const t = statsNum(q.var, rs); return { p: t[k], n: t.n }; } })), grupos, rows,
+    { rowHead: etiquetaCorte(S.cruce) + " →", num: true, base: rs => statsNum(q.var, rs).n });
+  return h;
+}
+
+/* ---------- textos ---------- */
+const STOP = new Set("a al algo algun alguna algunas alguno algunos ante antes aun bien cada como con contra cual cuando de del desde donde dos el ella ellas ellos en entre era es esa esas ese eso esos esta estan estar este esto estos fue ha hace hay la las le les lo los mas me mi mis mucho muy mas ni no nos o otra otro para pero poco por porque que se ser si sin sobre su sus tambien te tiene todo todos tu un una uno unos y ya yo nada ninguna ninguno mas veces vez cosas cosa hacer seria".split(" "));
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function listaTextos(v, rows, titulo) {
+  if (!D[v]) return "";
+  const n = rows.filter(i => D[v].v[i]).length;
+  if (!n) return "";
+  return `<details data-txt="${v}"><summary>${esc(titulo)} (${fmt(n)})</summary><div class="tbox"></div></details>`;
+}
+function vistaTexto(q, rows) {
+  return `<p class="nota">Pregunta opcional. Se muestran las respuestas no vacías con el filtro actual.</p><div data-txt="${q.var}" data-open="1"><div class="tbox"></div></div>`;
+}
+function enlazarTextos() {
+  const rows = filas();
+  document.querySelectorAll("[data-txt]").forEach(box => {
+    const v = box.dataset.txt;
+    const pintar = () => {
+      const items = rows.filter(i => D[v].v[i]).map(i => ({ i, t: D[v].v[i] }));
+      const cnt = {};
+      for (const it of items) for (const p of new Set(norm(it.t).match(/[a-zñ]{3,}/g) || [])) if (!STOP.has(p)) cnt[p] = (cnt[p] || 0) + 1;
+      const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 30);
+      const tb = box.querySelector(".tbox");
+      tb.innerHTML = `<div class="ctrls"><input type="search" placeholder="Buscar en las respuestas…" aria-label="Buscar"><span class="small cnt"></span></div>
+        <div class="words">${top.map(([p, c]) => `<button data-w="${p}">${p}<b>${c}</b></button>`).join("")}</div><div class="tlist"></div>`;
+      const inp = tb.querySelector("input"), list = tb.querySelector(".tlist"), cn = tb.querySelector(".cnt");
+      const lv = D.p01_facultad_sigla.lv, lc = D.condicion.lv;
+      const draw = () => {
+        const term = norm(inp.value.trim());
+        const sel = term ? items.filter(it => norm(it.t).includes(term)) : items;
+        cn.textContent = `${fmt(sel.length)} de ${fmt(items.length)} respuestas`;
+        list.innerHTML = sel.slice(0, 600).map(it => {
+          let t = esc(it.t);
+          if (term) { const k = norm(it.t).indexOf(term); if (k >= 0) t = esc(it.t.slice(0, k)) + "<mark>" + esc(it.t.slice(k, k + term.length)) + "</mark>" + esc(it.t.slice(k + term.length)); }
+          const fa = D.p01_facultad_sigla.v[it.i], co = D.condicion.v[it.i];
+          return `<div class="titem">${t}<div class="meta">id ${D.id.v[it.i]} · ${fa != null ? lv[fa] : "–"} · ${co != null ? lc[co] : "–"}</div></div>`;
+        }).join("") + (sel.length > 600 ? `<p class="small">Se muestran las primeras 600.</p>` : "");
+      };
+      inp.oninput = draw;
+      tb.querySelectorAll(".words button").forEach(b => b.onclick = () => { inp.value = b.dataset.w; draw(); });
+      draw();
+    };
+    if (box.dataset.open) pintar();
+    else box.addEventListener("toggle", () => { if (box.open && !box.querySelector(".tlist")) pintar(); });
+  });
+}
+
+/* ---------- diccionario y controles ---------- */
+function tablaRef(el, head, data, titulo, nota) {
+  el.innerHTML = `<h2 style="margin:0 0 6px;font-size:18px">${titulo}</h2><p class="nota">${nota}</p><div class="ctrls"><input type="search" placeholder="Buscar…" aria-label="Buscar"><span class="small cnt"></span></div><div class="tw" style="max-height:72vh"><table class="ref"><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody></tbody></table></div>`;
+  const inp = el.querySelector("input"), tb = el.querySelector("tbody"), cn = el.querySelector(".cnt");
+  const draw = () => {
+    const t = norm(inp.value.trim());
+    const sel = t ? data.filter(r => norm(r.join(" ")).includes(t)) : data;
+    cn.textContent = `${fmt(sel.length)} filas`;
+    tb.innerHTML = sel.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("");
+  };
+  inp.oninput = draw; draw();
+}
+
+/* ---------- pestañas y tema ---------- */
+$("#tabs").querySelectorAll("button").forEach(b => b.onclick = () => {
+  $("#tabs").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  for (const t of ["explorar", "diccionario", "controles"]) $("#v-" + t).hidden = t !== b.dataset.t;
+  $("#filtros").style.display = b.dataset.t === "explorar" ? "" : "none";
+});
+$("#theme").onclick = () => {
+  const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("explorador_uner_tema", r.dataset.theme); } catch (e) {}
+  render();
+};
+try { const t = localStorage.getItem("explorador_uner_tema"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+tablaRef($("#dic"), ["Variable", "P", "Pregunta", "Tipo", "Opción", "Valores"], DB.diccionario, "Diccionario de variables", "Variables de df_analisis.xlsx (hoja datos).");
+tablaRef($("#ctl"), ["id", "Variable", "Problema", "Valor original", "Valor nuevo"], DB.controles, "Controles de calidad", "Casos con inconsistencias o valores corregidos al preparar la base.");
+try {
+  dibujarNav(); dibujarFiltros(); render();
+  $("#aviso").remove();
+} catch (e) {
+  $("#aviso").textContent = "Error al iniciar el explorador: " + e.message;
+  throw e;
+}
+</script>
+</body>
+</html>
